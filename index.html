@@ -21,6 +21,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.4}
 button{font:inherit;cursor:pointer}
+html,body{overflow-x:hidden;max-width:100%}
 main{max-width:760px;margin:0 auto;padding:0 16px 72px}
 
 .hero{background:linear-gradient(135deg,#0a0a0a,#27272a 60%,#be185d);color:#fff;margin:0 -16px;padding:28px 20px 70px;border-radius:0 0 32px 32px}
@@ -31,6 +32,7 @@ main{max-width:760px;margin:0 auto;padding:0 16px 72px}
 
 .progress-card{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:18px 20px;margin-top:-48px;position:sticky;top:10px;z-index:5}
 .save-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px}
+.progress-row span{text-align:right}
 .save-row small{color:var(--muted);font-size:13px}
 .save{border:0;border-radius:14px;padding:12px 20px;font-weight:800;font-size:16px;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-2));box-shadow:0 6px 16px rgba(236,72,153,.4);transition:.15s}
 .save:hover{filter:brightness(1.06)}.save:active{transform:scale(.97)}
@@ -106,11 +108,13 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
 @keyframes pop{50%{transform:scale(1.03)}}
 @media(max-width:560px){
   .cols{display:none}
-  .item{grid-template-columns:26px 1fr auto;grid-template-areas:"c n r" "c q b"}
-  .item .check{grid-area:c}.item .name{grid-area:n}.item .remove{grid-area:r}
-  .item .qty{width:auto;gap:4px}.item .qty:not(.bought){grid-area:q;justify-self:start}.item .qty.bought{grid-area:b;grid-column:2/4;justify-self:start}
-  .qty .lbl{display:inline;font-size:11px;font-weight:700;padding:0 6px 0 8px;color:var(--muted);text-transform:uppercase}
+  .item{grid-template-columns:26px minmax(0,1fr) auto;grid-template-areas:"c n r" "c q q" "c b b";row-gap:6px}
+  .item .check{grid-area:c;align-self:start;margin-top:2px}.item .name{grid-area:n}.item .remove{grid-area:r}
+  .item .qty{width:fit-content}.item .qty:not(.bought){grid-area:q}.item .qty.bought{grid-area:b}
+  .qty .lbl{display:inline-block;min-width:78px;font-size:11px;font-weight:700;padding:0 6px 0 10px;color:var(--muted);text-transform:uppercase}
   .qty.bought .lbl{color:#f9a8d4}
+  .ok-badge{margin-left:0;margin-top:4px;display:flex;width:fit-content}
+  h2{padding:12px}.cat-bar{margin:0 12px 4px}.items{padding:2px 4px 8px}
 }
 @media print{.hero,.toolbar,.chips,.add-here,.remove,.qty button,.progress-card{display:none}section{box-shadow:none;border:1px solid #ccc;break-inside:avoid}}
 </style>

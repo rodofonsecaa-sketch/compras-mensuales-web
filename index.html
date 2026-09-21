@@ -1,46 +1,210 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Mi Lista Mensual</title>
-  <style>
-    :root { --ink:#31413b; --muted:#68766f; --paper:#fffdf8; --sage:#e7f1ea; --accent:#207a5d; --line:#dbe4dc; --warm:#fff0d8; --pink:#f8dfe6; }
-    * { box-sizing:border-box } body { margin:0; background:radial-gradient(circle at top left,#fff4d7 0,transparent 32%),linear-gradient(130deg,#edf7f0,#fff8ee); font-family:Arial,sans-serif; color:var(--ink) }
-    main { max-width:860px; margin:0 auto; padding:30px 16px 64px } header { display:flex; justify-content:space-between; gap:15px; align-items:end; margin-bottom:22px }
-    h1 { margin:0; font-size:clamp(28px,5vw,43px); letter-spacing:-1.5px } .subtitle { margin:7px 0 0; color:var(--muted) }
-    .month { border:1px solid var(--line); background:#fff; border-radius:14px; padding:11px; font-weight:bold; color:var(--ink); font-size:16px; box-shadow:0 3px 10px #7c8b8112 }
-    .summary { background:linear-gradient(135deg,#345c4e,#1f8060); color:white; border-radius:22px; padding:20px 22px; display:flex; justify-content:space-between; align-items:center; gap:15px; margin-bottom:22px; box-shadow:0 10px 22px #39735c22 }
-    .summary small { opacity:.72; display:block; margin-bottom:4px }.summary strong { font-size:25px }.bar { width:45%; height:10px; border-radius:20px; background:#50655b; overflow:hidden }.bar i { display:block; height:100%; background:#badc7f; width:0%; transition:.2s }
-    .tools { display:flex; flex-wrap:wrap; gap:9px; margin-bottom:12px }.tools input { flex:1 1 200px; border:1px solid var(--line); border-radius:12px; padding:12px 14px; font-size:16px }.tools button, .add button, .actions button { border:0; border-radius:11px; padding:11px 15px; font-weight:bold; cursor:pointer; background:var(--sage); color:var(--ink) }.tools .danger { background:#f7dddd; color:#8a2f2f }.actions { display:flex; gap:9px; flex-wrap:wrap; margin:0 0 19px }.actions .add-product { background:var(--accent); color:#fff }.actions .copy-month { background:#e3edf9; color:#275b87 }.actions .save-list { background:var(--accent); color:#fff }.actions button[hidden] { display:none }
-    section { background:rgba(255,255,255,.9); border:1px solid var(--line); border-radius:20px; margin:13px 0; overflow:hidden; box-shadow:0 5px 15px #5e77620d } h2 { font-size:15px; letter-spacing:.3px; padding:11px 14px 11px 18px; margin:0; background:var(--warm); display:flex; align-items:center; justify-content:space-between; gap:10px } h2 button { border:0; border-radius:10px; padding:8px 11px; background:#fff; color:var(--accent); font-weight:bold; cursor:pointer; box-shadow:0 2px 6px #936d2c18 }.items { padding:4px 14px 12px }.inline-add { display:none; gap:8px; padding:0 14px 14px }.inline-add.open { display:flex }.inline-add input { flex:1; min-width:0; border:1px solid var(--line); border-radius:10px; padding:10px; font-size:15px }.inline-add button { border:0; border-radius:10px; padding:10px 13px; background:var(--accent); color:#fff; font-weight:bold; cursor:pointer }
-    .item { display:grid; grid-template-columns:28px 1fr 112px auto; align-items:center; gap:8px; min-height:48px; border-bottom:1px solid #edf0ed }.item:last-child { border:0 }.item input[type=checkbox] { width:19px; height:19px; accent-color:var(--accent); cursor:pointer }.item.done .name { text-decoration:line-through; color:#8a9690 }.qty-control { display:grid; grid-template-columns:31px 1fr 31px; align-items:center; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:#fff }.qty-control button { border:0; background:var(--sage); color:var(--accent); height:32px; font-size:20px; font-weight:bold; cursor:pointer; line-height:1 }.qty-control button:hover { background:#d1e6d7 }.qty-control output { text-align:center; font-weight:bold; color:var(--ink) }.remove { display:block; border:0; background:#f9e1e1; color:#9f3434; border-radius:8px; padding:7px 9px; font-weight:bold; cursor:pointer }.undo-line { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:11px 5px 0; color:#765217; font-size:14px }.undo-line button { border:0; background:#fff0d8; color:#765217; border-radius:8px; padding:8px 10px; font-weight:bold; cursor:pointer }.add { display:none; gap:8px; margin-top:20px; padding:14px; background:#fff; border:1px solid var(--line); border-radius:16px }.add.open { display:flex }.add input { flex:1; border:1px solid var(--line); border-radius:11px; padding:12px; font-size:16px }.add select { border:1px solid var(--line); border-radius:11px; padding:9px; background:#fff }
-    footer { text-align:center; color:var(--muted); font-size:13px; margin-top:22px } @media(max-width:560px) { header{align-items:stretch;flex-direction:column}.month{width:100%}.summary{align-items:flex-start;flex-direction:column}.bar{width:100%}.add{flex-wrap:wrap}.add input{min-width:100%} }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0f766e">
+<title>Mi Lista Mensual</title>
+<style>
+:root{
+  --bg:#f3f7f4; --card:#ffffff; --ink:#1c2b26; --muted:#6b7c75; --line:#e2ebe6;
+  --primary:#0f766e; --primary-2:#14b8a6; --primary-soft:#dff5f0;
+  --warn:#b45309; --warn-soft:#fef3c7; --danger:#b91c1c; --danger-soft:#fee2e2;
+  --shadow:0 1px 2px rgba(20,60,50,.06),0 8px 24px rgba(20,60,50,.07);
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#0e1714; --card:#16231f; --ink:#e6f0ec; --muted:#93a8a0; --line:#243630;
+  --primary:#2dd4bf; --primary-2:#14b8a6; --primary-soft:#12352f;
+  --warn:#fbbf24; --warn-soft:#3a2f10; --danger:#fca5a5; --danger-soft:#3a1717;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3);
+}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.4}
+button{font:inherit;cursor:pointer}
+main{max-width:760px;margin:0 auto;padding:0 16px 72px}
+
+.hero{background:linear-gradient(135deg,#0f766e,#14b8a6 70%,#5eead4);color:#fff;margin:0 -16px;padding:28px 20px 70px;border-radius:0 0 32px 32px}
+.hero-top{max-width:728px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.hero h1{margin:0;font-size:clamp(26px,6vw,36px);letter-spacing:-.5px}
+.hero p{margin:4px 0 0;opacity:.9;font-size:15px}
+.month{border:0;border-radius:14px;padding:10px 12px;font:600 15px inherit;background:rgba(255,255,255,.95);color:#12332d;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+
+.progress-card{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:18px 20px;margin-top:-48px;position:sticky;top:10px;z-index:5}
+.progress-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.progress-row strong{font-size:22px;font-variant-numeric:tabular-nums}
+.progress-row span{color:var(--muted);font-size:14px}
+.bar{height:12px;border-radius:99px;background:var(--primary-soft);overflow:hidden;margin-top:12px}
+.bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--primary),var(--primary-2));transition:width .35s ease}
+
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 12px}
+.search{flex:1 1 220px;position:relative}
+.search input{width:100%;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;padding:13px 14px 13px 42px;font-size:16px;box-shadow:var(--shadow)}
+.search::before{content:"🔎";position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px}
+.search input:focus,.inline-add input:focus{outline:2px solid var(--primary-2);border-color:transparent}
+.ghost{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;padding:12px 16px;font-weight:600;box-shadow:var(--shadow)}
+.ghost:hover{background:var(--primary-soft)}
+
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:8px 14px;font-size:14px;font-weight:600;white-space:nowrap}
+.chip:hover{border-color:var(--primary-2)}
+.chip small{color:var(--muted);font-weight:500;margin-left:4px}
+
+section{background:var(--card);border-radius:22px;box-shadow:var(--shadow);margin:14px 0;overflow:hidden;scroll-margin-top:110px}
+h2{margin:0;padding:14px 16px;display:flex;align-items:center;gap:12px;font-size:17px}
+.cat-icon{width:40px;height:40px;border-radius:12px;background:var(--primary-soft);display:grid;place-items:center;font-size:21px;flex:none}
+.cat-title{flex:1;min-width:0}
+.cat-title small{display:block;font-size:12.5px;font-weight:500;color:var(--muted)}
+.cat-bar{height:4px;background:var(--primary-soft);margin:0 16px 4px;border-radius:9px;overflow:hidden}
+.cat-bar i{display:block;height:100%;background:var(--primary-2);transition:width .3s}
+.add-here{border:0;background:var(--primary-soft);color:var(--primary);border-radius:12px;padding:8px 12px;font-weight:700;font-size:14px}
+
+.items{padding:2px 8px 8px}
+.item{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:10px;padding:8px;border-radius:14px;transition:background .15s}
+.item:hover{background:color-mix(in srgb,var(--primary-soft) 55%,transparent)}
+.item+.item{border-top:1px solid var(--line)}
+.check{appearance:none;-webkit-appearance:none;width:26px;height:26px;border-radius:9px;border:2px solid var(--line);background:var(--card);display:grid;place-items:center;cursor:pointer;transition:.15s;margin:0}
+.check:hover{border-color:var(--primary-2)}
+.check:checked{background:var(--primary);border-color:var(--primary)}
+.check:checked::after{content:"✓";color:#fff;font-weight:900;font-size:16px;line-height:1}
+.name{font-size:16px;font-weight:500;overflow-wrap:anywhere}
+.item.done .name{color:var(--muted);text-decoration:line-through}
+.qty{display:flex;align-items:center;background:var(--primary-soft);border-radius:99px;padding:3px}
+.qty button{width:32px;height:32px;border:0;border-radius:50%;background:var(--card);color:var(--primary);font-size:20px;font-weight:700;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.qty button:active{transform:scale(.92)}
+.qty output{min-width:30px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.remove{border:0;background:transparent;color:var(--muted);width:34px;height:34px;border-radius:10px;font-size:16px}
+.remove:hover{background:var(--danger-soft);color:var(--danger)}
+
+.undo-line{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:8px;padding:10px 12px;border-radius:12px;background:var(--warn-soft);color:var(--warn);font-size:14px}
+.undo-line button{border:0;background:var(--card);color:var(--warn);border-radius:10px;padding:7px 12px;font-weight:700}
+
+.inline-add{display:none;gap:8px;padding:4px 16px 16px}
+.inline-add.open{display:flex}
+.inline-add input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:11px 12px;font-size:16px}
+.inline-add button{border:0;border-radius:12px;padding:11px 16px;background:var(--primary);color:#fff;font-weight:700}
+
+.empty{text-align:center;color:var(--muted);padding:40px 10px}
+footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
+.confetti{animation:pop .5s ease}
+@keyframes pop{50%{transform:scale(1.03)}}
+@media(max-width:480px){
+  .item{grid-template-columns:auto 1fr auto;grid-template-areas:"c n r" "c q q"}
+  .item .check{grid-area:c}.item .name{grid-area:n}.item .remove{grid-area:r}.item .qty{grid-area:q;justify-self:start}
+}
+@media print{.hero,.toolbar,.chips,.add-here,.remove,.qty button,.progress-card{display:none}section{box-shadow:none;border:1px solid #ccc;break-inside:avoid}}
+</style>
 </head>
-<body><main>
-  <header><div><h1>🛒 Compras de casa</h1><p class="subtitle">Tu ayudita para comprar con calma y sin olvidar nada.</p></div><input class="month" type="month" id="month" aria-label="Mes de compras"></header>
-  <div class="summary"><div><small id="hello">¡Vamos paso a paso!</small><strong id="count">0 de 0 comprados</strong></div><div class="bar"><i id="progress"></i></div></div>
-  <div class="tools"><input id="search" placeholder="🔎 Buscar un producto…"><button id="copy">📋 Copiar pendientes</button><button class="danger" id="reset">↺ Desmarcar todo</button></div>
-  <div class="actions"><button class="save-list" id="saveList">💾 Guardar lista</button><button class="copy-month" id="copyPrevious">📅 Copiar mes anterior</button></div>
+<body>
+<main>
+  <div class="hero">
+    <div class="hero-top">
+      <div><h1>🛒 Compras de casa</h1><p>Marca lo que compras y no olvides nada.</p></div>
+      <input class="month" type="month" id="month" aria-label="Mes de compras">
+    </div>
+  </div>
+
+  <div class="progress-card" id="progressCard">
+    <div class="progress-row"><strong id="count">0 de 0</strong><span id="hello">¡Vamos paso a paso!</span></div>
+    <div class="bar"><i id="progress"></i></div>
+  </div>
+
+  <div class="toolbar">
+    <label class="search"><input id="search" type="search" placeholder="Buscar un producto…" aria-label="Buscar"></label>
+    <button class="ghost" id="copyPrevious">📅 Copiar mes anterior</button>
+  </div>
+  <nav class="chips" id="chips" aria-label="Categorías"></nav>
+
   <div id="lists"></div>
-  <footer>✨ Tu lista queda guardada en este navegador y se prepara automáticamente para el mes siguiente.</footer>
-</main><script>
+  <footer>Tu lista se guarda sola en este navegador y pasa al mes siguiente automáticamente.</footer>
+</main>
+
+<script>
 const defaults={
  'Despensa':['Arroz','Fideos','Salsa de tomate','Caldo de gallina','Harina','Azúcar','Aceite','Atún','Porotos','Compotas','Jaleas','Leche condensada','Leche','Jugos individuales','Té','Té de canela','Pan rallado','Chispas de chocolate','Crema en caja','Mantequilla'],
  'Refrigerador':['Mayonesa','Ketchup','Mostaza','Queso','Queso rallado','Queso crema','Jamón','Yogur','Salchichas'],
  'Carnes y congelados':['Carne','Carne molida','Pollo / pechuga de pollo','Hamburguesas','Bistec','Chuletas','Lomito','Churrasco','Reineta o salmón'],
  'Frutas y verduras':['Champiñones','Plátano','Frutas o verduras faltantes'],
  'Baño y cuidado personal':['Papel higiénico','Shampoo','Acondicionador','Jabón líquido','Pasta de dientes'],
- 'Limpieza del hogar':['Cloro','Limpiador de piso','Lavalozas','Limpiador multiuso','Bolsas de basura','Esponja','Virutilla','Desodorante ambiental'] };
-const month=document.querySelector('#month'), lists=document.querySelector('#lists'), search=document.querySelector('#search'); let lastDeleted=null;
-month.value=new Date().toISOString().slice(0,7); const key=()=>`compras-${month.value}`;
-function initial(){return Object.fromEntries(Object.entries(defaults).map(([c,a])=>[c,a.map(name=>({name,qty:0,done:false}))]));}
-function cloneForNewMonth(data){return Object.fromEntries(Object.entries(data).map(([cat,items])=>[cat,items.map(item=>({...item,done:false}))]))} function load(){try{const saved=localStorage.getItem(key());if(saved)return JSON.parse(saved);const previous=localStorage.getItem(previousKey());return previous?cloneForNewMonth(JSON.parse(previous)):initial()}catch{return initial()}} function save(data){localStorage.setItem(key(),JSON.stringify(data))} function previousKey(){const d=new Date(`${month.value}-01T12:00:00`);d.setMonth(d.getMonth()-1);return `compras-${d.toISOString().slice(0,7)}`}
+ 'Limpieza del hogar':['Cloro','Limpiador de piso','Lavalozas','Limpiador multiuso','Bolsas de basura','Esponja','Virutilla','Desodorante ambiental']};
 const icons={'Despensa':'🥫','Refrigerador':'🧀','Carnes y congelados':'❄️','Frutas y verduras':'🍎','Baño y cuidado personal':'🧴','Limpieza del hogar':'🧽'};
-function render(){const data=load(), q=search.value.trim().toLocaleLowerCase();lists.innerHTML=''; let total=0,done=0;
-Object.entries(data).forEach(([cat,items])=>{const matching=items.filter(x=>x.name.toLocaleLowerCase().includes(q)); if(q&&!matching.length)return; const sec=document.createElement('section');sec.innerHTML=`<h2><span>${icons[cat]||'📝'} ${cat}</span><button class="add-here">＋ Agregar</button></h2><div class="items"></div><form class="inline-add"><input required placeholder="Agregar a ${cat}"><button>Guardar</button></form>`; const box=sec.querySelector('.items'), add=sec.querySelector('.inline-add');sec.querySelector('.add-here').onclick=()=>{add.classList.toggle('open');if(add.classList.contains('open'))add.querySelector('input').focus()};add.onsubmit=e=>{e.preventDefault();const input=add.querySelector('input');if(input.value.trim()){data[cat].push({name:input.value.trim(),qty:0,done:false});save(data);render()}};matching.forEach(item=>{total++;if(item.done)done++;const amount=Number(item.qty)||0;const row=document.createElement('div');row.className='item '+(item.done?'done':'');row.innerHTML=`<input type="checkbox" ${item.done?'checked':''} aria-label="Marcar ${item.name}"><span class="name">${item.name}</span><div class="qty-control" aria-label="Cantidad de ${item.name}"><button class="minus" aria-label="Restar ${item.name}">−</button><output>${amount}</output><button class="plus" aria-label="Sumar ${item.name}">+</button></div><button class="remove" title="Eliminar ${item.name}">Eliminar</button>`;row.querySelector('[type=checkbox]').onchange=e=>{item.done=e.target.checked;save(data);render()};row.querySelector('.minus').onclick=()=>{item.qty=Math.max(0,amount-1);save(data);render()};row.querySelector('.plus').onclick=()=>{item.qty=amount+1;save(data);render()};row.querySelector('.remove').onclick=()=>{lastDeleted={cat,item,index:data[cat].indexOf(item)};data[cat]=data[cat].filter(x=>x!==item);save(data);render()};box.append(row)});if(lastDeleted&&lastDeleted.cat===cat){const undo=document.createElement('div');undo.className='undo-line';undo.innerHTML=`<span>Se eliminó <strong>${lastDeleted.item.name}</strong></span><button>↩ Deshacer</button>`;undo.querySelector('button').onclick=()=>{const d=load();if(!d[lastDeleted.cat])d[lastDeleted.cat]=[];d[lastDeleted.cat].splice(lastDeleted.index,0,lastDeleted.item);save(d);lastDeleted=null;render()};box.append(undo)}lists.append(sec)});
-document.querySelector('#count').textContent=`${done} de ${total} comprados`;document.querySelector('#hello').textContent=done===total&&total?'¡Excelente, lista completa! 🎉':done?'¡Vas muy bien! Sigue así 💚':'¡Vamos paso a paso!';document.querySelector('#progress').style.width=(total?done/total*100:0)+'%';}
-month.onchange=()=>{lastDeleted=null;render()};search.oninput=render;document.querySelector('#saveList').onclick=()=>{save(load());const button=document.querySelector('#saveList');button.textContent='✓ Lista guardada';setTimeout(()=>button.textContent='💾 Guardar lista',1800)};document.querySelector('#copyPrevious').onclick=()=>{const raw=localStorage.getItem(previousKey());if(!raw){alert('No hay una lista guardada para el mes anterior.');return}if(!confirm('¿Copiar los productos del mes anterior? Se reemplazará la lista del mes actual.'))return;try{save(cloneForNewMonth(JSON.parse(raw)));lastDeleted=null;render()}catch{alert('No se pudo copiar la lista anterior.')}};
-document.querySelector('#reset').onclick=()=>{const d=load();Object.values(d).flat().forEach(x=>x.done=false);save(d);render()};document.querySelector('#copy').onclick=async()=>{const d=load(),t=Object.entries(d).map(([c,x])=>{const p=x.filter(i=>!i.done).map(i=>`• ${i.name}${i.qty?' ('+i.qty+')':''}`).join('\n');return p?`${c}\n${p}`:''}).filter(Boolean).join('\n\n');try{await navigator.clipboard.writeText(t);alert('Pendientes copiados.')}catch{prompt('Copia esta lista:',t)}};render();
-</script></body></html>
+
+const $=s=>document.querySelector(s);
+const month=$('#month'), lists=$('#lists'), search=$('#search'), chips=$('#chips');
+let lastDeleted=null, wasComplete=false;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const slug=s=>'cat-'+s.normalize('NFD').replace(/[^\w]+/g,'-');
+
+const localMonth=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`};
+month.value=localMonth();
+const key=()=>`compras-${month.value}`;
+function previousKey(){const [y,m]=month.value.split('-').map(Number);const d=new Date(y,m-2,1);return `compras-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
+const initial=()=>Object.fromEntries(Object.entries(defaults).map(([c,a])=>[c,a.map(name=>({name,qty:0,done:false}))]));
+const cloneForNewMonth=data=>Object.fromEntries(Object.entries(data).map(([c,items])=>[c,items.map(i=>({...i,done:false}))]));
+function load(){try{const s=localStorage.getItem(key());if(s)return JSON.parse(s);const p=localStorage.getItem(previousKey());return p?cloneForNewMonth(JSON.parse(p)):initial()}catch{return initial()}}
+function save(d){try{localStorage.setItem(key(),JSON.stringify(d))}catch{alert('No se pudo guardar en este navegador.')}}
+
+function render(){
+  const data=load(), q=search.value.trim().toLocaleLowerCase();
+  lists.innerHTML=''; chips.innerHTML=''; let total=0, done=0;
+  Object.entries(data).forEach(([cat,items])=>{
+    const matching=items.filter(x=>x.name.toLocaleLowerCase().includes(q));
+    if(q&&!matching.length)return;
+    const cDone=items.filter(i=>i.done).length;
+    total+=matching.length; done+=matching.filter(i=>i.done).length;
+
+    const chip=document.createElement('button');chip.className='chip';
+    chip.innerHTML=`${icons[cat]||'📝'} ${esc(cat)}<small>${cDone}/${items.length}</small>`;
+    chip.onclick=()=>document.getElementById(slug(cat))?.scrollIntoView({behavior:'smooth'});
+    chips.append(chip);
+
+    const sec=document.createElement('section');sec.id=slug(cat);
+    sec.innerHTML=`<h2><span class="cat-icon">${icons[cat]||'📝'}</span><span class="cat-title">${esc(cat)}<small>${cDone} de ${items.length} comprados</small></span><button class="add-here">＋ Agregar</button></h2>
+      <div class="cat-bar"><i style="width:${items.length?cDone/items.length*100:0}%"></i></div>
+      <div class="items"></div>
+      <form class="inline-add"><input required placeholder="Agregar a ${esc(cat)}"><button>Guardar</button></form>`;
+    const box=sec.querySelector('.items'), add=sec.querySelector('.inline-add');
+    sec.querySelector('.add-here').onclick=()=>{add.classList.toggle('open');if(add.classList.contains('open'))add.querySelector('input').focus()};
+    add.onsubmit=e=>{e.preventDefault();const v=add.querySelector('input').value.trim();if(v){data[cat].push({name:v,qty:0,done:false});save(data);render()}};
+
+    matching.forEach(item=>{
+      const n=Number(item.qty)||0, row=document.createElement('div');
+      row.className='item'+(item.done?' done':'');
+      row.innerHTML=`<input type="checkbox" class="check" ${item.done?'checked':''} aria-label="Marcar ${esc(item.name)}">
+        <span class="name">${esc(item.name)}</span>
+        <div class="qty" role="group" aria-label="Cantidad de ${esc(item.name)}"><button class="minus" aria-label="Restar">−</button><output>${n}</output><button class="plus" aria-label="Sumar">+</button></div>
+        <button class="remove" title="Eliminar ${esc(item.name)}" aria-label="Eliminar ${esc(item.name)}">🗑</button>`;
+      row.querySelector('.check').onchange=e=>{item.done=e.target.checked;save(data);render()};
+      row.querySelector('.minus').onclick=()=>{item.qty=Math.max(0,n-1);save(data);render()};
+      row.querySelector('.plus').onclick=()=>{item.qty=n+1;save(data);render()};
+      row.querySelector('.remove').onclick=()=>{lastDeleted={cat,item,index:data[cat].indexOf(item)};data[cat]=data[cat].filter(x=>x!==item);save(data);render()};
+      box.append(row);
+    });
+    if(lastDeleted&&lastDeleted.cat===cat){
+      const u=document.createElement('div');u.className='undo-line';
+      u.innerHTML=`<span>Se eliminó <strong>${esc(lastDeleted.item.name)}</strong></span><button>↩ Deshacer</button>`;
+      u.querySelector('button').onclick=()=>{const d=load();if(!d[lastDeleted.cat])d[lastDeleted.cat]=[];d[lastDeleted.cat].splice(lastDeleted.index,0,lastDeleted.item);save(d);lastDeleted=null;render()};
+      box.append(u);
+    }
+    lists.append(sec);
+  });
+  if(!lists.children.length)lists.innerHTML='<div class="empty">No encontré productos con esa búsqueda 🤔</div>';
+  const complete=total>0&&done===total;
+  $('#count').textContent=`${done} de ${total}`;
+  $('#hello').textContent=complete?'¡Lista completa! 🎉':done?'¡Vas muy bien! 💚':'¡Vamos paso a paso!';
+  $('#progress').style.width=(total?done/total*100:0)+'%';
+  if(complete&&!wasComplete){const c=$('#progressCard');c.classList.remove('confetti');void c.offsetWidth;c.classList.add('confetti')}
+  wasComplete=complete;
+}
+month.onchange=()=>{lastDeleted=null;render()};
+search.oninput=render;
+$('#copyPrevious').onclick=()=>{
+  const raw=localStorage.getItem(previousKey());
+  if(!raw){alert('No hay una lista guardada para el mes anterior.');return}
+  if(!confirm('¿Copiar los productos del mes anterior? Se reemplazará la lista del mes actual.'))return;
+  try{save(cloneForNewMonth(JSON.parse(raw)));lastDeleted=null;render()}catch{alert('No se pudo copiar la lista anterior.')}
+};
+render();
+</script>
+</body>
+</html>

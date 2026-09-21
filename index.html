@@ -79,6 +79,11 @@ h2{margin:0;padding:14px 16px;display:flex;align-items:center;gap:12px;font-size
 .qty{width:var(--cw);justify-content:space-between;display:flex;align-items:center;background:var(--primary-soft);border-radius:99px;padding:3px}
 .qty button{width:32px;height:32px;border:0;border-radius:50%;background:var(--card);color:var(--primary);font-size:20px;font-weight:700;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .qty button:active{transform:scale(.92)}
+.ok-badge{display:inline-flex;align-items:center;gap:4px;margin-left:8px;padding:2px 9px;border-radius:99px;background:#dcfce7;color:#15803d;font-size:12px;font-weight:800;white-space:nowrap;vertical-align:middle}
+.item.ok{background:color-mix(in srgb,#22c55e 9%,transparent)}
+.item.ok .name{color:var(--ink);text-decoration:none}
+.check:disabled{cursor:default;background:#16a34a;border-color:#16a34a}
+@media(prefers-color-scheme:dark){.ok-badge{background:#14532d;color:#86efac}}
 .qty .lbl{display:none}
 .qty.bought{background:var(--ink);}
 .qty.bought output{color:#fff}
@@ -148,6 +153,7 @@ const icons={'Despensa':'🥫','Refrigerador':'🧀','Carnes y congelados':'❄�
 const $=s=>document.querySelector(s);
 const month=$('#month'), lists=$('#lists'), search=$('#search'), chips=$('#chips');
 let lastDeleted=null, wasComplete=false;
+const isOk=i=>(Number(i.qty)||0)>0&&(Number(i.bought)||0)>0, isDone=i=>!!i.done||isOk(i);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const slug=s=>'cat-'+s.normalize('NFD').replace(/[^\w]+/g,'-');
 
@@ -166,8 +172,8 @@ function render(){
   Object.entries(data).forEach(([cat,items])=>{
     const matching=items.filter(x=>x.name.toLocaleLowerCase().includes(q));
     if(q&&!matching.length)return;
-    const cDone=items.filter(i=>i.done).length;
-    total+=matching.length; done+=matching.filter(i=>i.done).length;
+    const cDone=items.filter(isDone).length;
+    total+=matching.length; done+=matching.filter(isDone).length;
 
     const chip=document.createElement('button');chip.className='chip';
     chip.innerHTML=`${icons[cat]||'📝'} ${esc(cat)}<small>${cDone}/${items.length}</small>`;
@@ -185,10 +191,10 @@ function render(){
     add.onsubmit=e=>{e.preventDefault();const v=add.querySelector('input').value.trim();if(v){data[cat].push({name:v,qty:0,bought:0,done:false});save(data);render()}};
 
     matching.forEach(item=>{
-      const n=Number(item.qty)||0, b=Number(item.bought)||0, row=document.createElement('div');
-      row.className='item'+(item.done?' done':'');
-      row.innerHTML=`<input type="checkbox" class="check" ${item.done?'checked':''} aria-label="Marcar ${esc(item.name)}">
-        <span class="name">${esc(item.name)}</span>
+      const n=Number(item.qty)||0, b=Number(item.bought)||0, ok=isOk(item), row=document.createElement('div');
+      row.className='item'+(ok?' ok':item.done?' done':'');
+      row.innerHTML=`<input type="checkbox" class="check" ${item.done||ok?'checked':''} ${ok?'disabled title="Comprado: Lista y Comprado tienen cantidad"':''} aria-label="Marcar ${esc(item.name)}">
+        <span class="name">${esc(item.name)}${ok?'<em class="ok-badge">✓ Comprado</em>':''}</span>
         <div class="qty" role="group" aria-label="Cantidad estimada de ${esc(item.name)}"><span class="lbl">Lista</span><button class="minus" aria-label="Restar lista">−</button><output>${n}</output><button class="plus" aria-label="Sumar lista">+</button></div>
         <div class="qty bought" role="group" aria-label="Cantidad comprada de ${esc(item.name)}"><span class="lbl">Comprado</span><button class="bminus" aria-label="Restar comprado">−</button><output>${b}</output><button class="bplus" aria-label="Sumar comprado">+</button></div>
         <button class="remove" title="Eliminar ${esc(item.name)}" aria-label="Eliminar ${esc(item.name)}">🗑</button>`;

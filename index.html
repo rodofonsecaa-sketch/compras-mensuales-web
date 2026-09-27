@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a0a0a">
-<title>Mi Lista Mensual</title>
+<title>Mis Listas</title>
 <style>
 :root{
   --bg:#fdf2f8; --card:#ffffff; --ink:#18181b; --muted:#71717a; --line:#f5d0e3;
@@ -26,9 +26,12 @@ main{max-width:760px;margin:0 auto;padding:0 16px 72px}
 
 .hero{background:linear-gradient(135deg,#0a0a0a,#27272a 60%,#be185d);color:#fff;margin:0 -16px;padding:28px 20px 70px;border-radius:0 0 32px 32px}
 .hero-top{max-width:728px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
-.hero h1{margin:0;font-size:clamp(26px,6vw,36px);letter-spacing:-.5px}
+.hero h1{margin:0;font-size:clamp(26px,6vw,36px);letter-spacing:-.5px;display:flex;align-items:center;gap:10px}
 .hero p{margin:4px 0 0;opacity:.9;font-size:15px}
+.hero-right{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
 .month{border:0;border-radius:14px;padding:10px 12px;font:600 15px inherit;background:rgba(255,255,255,.95);color:#18181b;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.home-btn{border:0;border-radius:14px;padding:9px 14px;font-weight:700;font-size:14px;background:rgba(255,255,255,.14);color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+.home-btn:hover{background:rgba(255,255,255,.24)}
 
 .progress-card{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:18px 20px;margin-top:-48px;position:sticky;top:10px;z-index:5}
 .save-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px}
@@ -47,7 +50,7 @@ main{max-width:760px;margin:0 auto;padding:0 16px 72px}
 .search{flex:1 1 220px;position:relative}
 .search input{width:100%;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;padding:13px 14px 13px 42px;font-size:16px;box-shadow:var(--shadow)}
 .search::before{content:"🔎";position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px}
-.search input:focus,.inline-add input:focus{outline:2px solid var(--primary-2);border-color:transparent}
+.search input:focus,.inline-add input:focus,.form-card input:focus,.form-card select:focus{outline:2px solid var(--primary-2);border-color:transparent}
 .ghost{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;padding:12px 16px;font-weight:600;box-shadow:var(--shadow)}
 .ghost:hover{background:var(--primary-soft)}
 
@@ -55,6 +58,7 @@ main{max-width:760px;margin:0 auto;padding:0 16px 72px}
 .chip{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:8px 14px;font-size:14px;font-weight:600;white-space:nowrap}
 .chip:hover{border-color:var(--primary-2)}
 .chip small{color:var(--muted);font-weight:500;margin-left:4px}
+.chip.add-cat{background:var(--primary-soft);color:var(--primary);border-color:transparent}
 
 section{background:var(--card);border-radius:22px;box-shadow:var(--shadow);margin:14px 0;overflow:hidden;scroll-margin-top:110px}
 h2{margin:0;padding:14px 16px;display:flex;align-items:center;gap:12px;font-size:17px}
@@ -70,6 +74,7 @@ h2{margin:0;padding:14px 16px;display:flex;align-items:center;gap:12px;font-size
 .cols{display:grid;grid-template-columns:26px 1fr var(--cw) var(--cw) 34px;gap:10px;padding:2px 16px 0;font-size:11.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)}
 .cols span:nth-child(3),.cols span:nth-child(4){text-align:center}
 .item{display:grid;grid-template-columns:26px 1fr var(--cw) var(--cw) 34px;align-items:center;gap:10px;padding:8px;border-radius:14px;transition:background .15s}
+.item.simple{grid-template-columns:26px 1fr 34px}
 .item:hover{background:color-mix(in srgb,var(--primary-soft) 55%,transparent)}
 .item+.item{border-top:1px solid var(--line)}
 .check{appearance:none;-webkit-appearance:none;width:26px;height:26px;border-radius:9px;border:2px solid var(--line);background:var(--card);display:grid;place-items:center;cursor:pointer;transition:.15s;margin:0}
@@ -94,6 +99,8 @@ h2{margin:0;padding:14px 16px;display:flex;align-items:center;gap:12px;font-size
 .qty output{min-width:30px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
 .remove{border:0;background:transparent;color:var(--muted);width:34px;height:34px;border-radius:10px;font-size:16px}
 .remove:hover{background:var(--danger-soft);color:var(--danger)}
+.cat-remove{border:0;background:transparent;color:rgba(255,255,255,.85);width:30px;height:30px;border-radius:9px;font-size:14px;flex:none}
+.cat-remove:hover{background:rgba(0,0,0,.12)}
 
 .undo-line{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:8px;padding:10px 12px;border-radius:12px;background:var(--warn-soft);color:var(--warn);font-size:14px}
 .undo-line button{border:0;background:var(--card);color:var(--warn);border-radius:10px;padding:7px 12px;font-weight:700}
@@ -107,69 +114,165 @@ h2{margin:0;padding:14px 16px;display:flex;align-items:center;gap:12px;font-size
 footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
 .confetti{animation:pop .5s ease}
 @keyframes pop{50%{transform:scale(1.03)}}
+
+/* Home / módulos */
+.home-header{padding:34px 20px 30px}
+.home-header h1{margin:0;font-size:clamp(26px,6vw,34px)}
+.home-header p{margin:6px 0 0;opacity:.9}
+.mod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:18px}
+.mod-card{text-align:left;border:1px solid var(--line);background:var(--card);border-radius:20px;padding:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px;position:relative}
+.mod-card .mod-icon{width:46px;height:46px;border-radius:14px;background:var(--primary-soft);display:grid;place-items:center;font-size:24px}
+.mod-card .mod-name{font-weight:800;font-size:17px}
+.mod-card .mod-tag{color:var(--muted);font-size:13px}
+.mod-card .mod-open{border:0;background:none;color:var(--primary);font-weight:700;font-size:14px;text-align:left;padding:0;margin-top:2px}
+.mod-card .mod-del{position:absolute;top:12px;right:12px;border:0;background:transparent;color:var(--muted);width:28px;height:28px;border-radius:8px;font-size:14px}
+.mod-card .mod-del:hover{background:var(--danger-soft);color:var(--danger)}
+.mod-card.new{align-items:center;justify-content:center;border-style:dashed;color:var(--primary);font-weight:800;cursor:pointer;min-height:120px}
+.mod-card.new:hover{background:var(--primary-soft)}
+.form-card{border:1px solid var(--line);background:var(--card);border-radius:20px;padding:20px;box-shadow:var(--shadow);margin-top:14px;display:flex;flex-direction:column;gap:12px}
+.form-card h3{margin:0;font-size:17px}
+.form-card label{font-size:13px;font-weight:700;color:var(--muted);display:block;margin-bottom:6px}
+.form-card input[type=text],.form-card select{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:11px 12px;font-size:16px}
+.form-row{display:flex;gap:12px;flex-wrap:wrap}
+.form-row>div{flex:1 1 160px}
+.form-actions{display:flex;gap:10px;justify-content:flex-end}
+.form-actions .cancel{border:0;background:var(--warn-soft);color:var(--ink);border-radius:12px;padding:11px 16px;font-weight:700}
+.form-actions .submit{border:0;background:var(--primary);color:#fff;border-radius:12px;padding:11px 18px;font-weight:800}
+.kind-opt{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+.kind-opt input{margin-top:3px}
+.kind-opt b{display:block;font-size:14px}
+.kind-opt span{font-size:12.5px;color:var(--muted)}
+.kind-opt.checked{border-color:var(--primary-2);background:var(--primary-soft)}
+
 @media(max-width:560px){
   .cols{display:none}
   .item{grid-template-columns:26px minmax(0,1fr) auto;grid-template-areas:"c n r" "c q q" "c b b";row-gap:6px}
+  .item.simple{grid-template-columns:26px minmax(0,1fr) auto;grid-template-areas:"c n r"}
   .item .check{grid-area:c;align-self:start;margin-top:2px}.item .name{grid-area:n}.item .remove{grid-area:r}
   .item .qty{width:fit-content}.item .qty:not(.bought){grid-area:q}.item .qty.bought{grid-area:b}
   .qty .lbl{display:inline-block;min-width:78px;font-size:11px;font-weight:700;padding:0 6px 0 10px;color:var(--muted);text-transform:uppercase}
   .ok-badge{margin-left:0;margin-top:4px;display:flex;width:fit-content}
   h2{padding:12px}.cat-bar{margin:0 12px 4px}.items{padding:2px 4px 8px}
+  .hero-top{align-items:center}
 }
 @media print{.hero,.toolbar,.chips,.add-here,.remove,.qty button,.progress-card{display:none}section{box-shadow:none;border:1px solid #ccc;break-inside:avoid}}
 </style>
 </head>
 <body>
 <main>
-  <div class="hero">
-    <div class="hero-top">
-      <div><h1>🛒 Compras de casa</h1><p>Marca lo que compras y no olvides nada.</p></div>
-      <input class="month" type="month" id="month" aria-label="Mes de compras">
+  <!-- Pantalla de inicio: lista de módulos -->
+  <div id="home" hidden>
+    <div class="hero home-header">
+      <h1>📋 Mis listas</h1>
+      <p>Elige un módulo para marcar lo tuyo, o crea uno nuevo.</p>
     </div>
+    <div class="mod-grid" id="modGrid"></div>
+    <div id="modFormHolder"></div>
   </div>
 
-  <div class="progress-card" id="progressCard">
-    <div class="progress-row"><strong id="count">0 de 0</strong><span id="hello">¡Vamos paso a paso!</span></div>
-    <div class="bar"><i id="progress"></i></div>
-    <div class="save-row"><small id="savedAt">Aún sin guardar</small><button class="save" id="saveList">💾 Guardar compra</button></div>
-  </div>
+  <!-- Vista de un módulo -->
+  <div id="appView" hidden>
+    <div class="hero">
+      <div class="hero-top">
+        <div><h1 id="modTitle">🛒 Compras de casa</h1><p id="modTag">Marca lo que compras y no olvides nada.</p></div>
+        <div class="hero-right">
+          <button class="home-btn" id="goHome">🏠 Módulos</button>
+          <input class="month" type="month" id="month" aria-label="Mes">
+        </div>
+      </div>
+    </div>
 
-  <div class="toolbar">
-    <label class="search"><input id="search" type="search" placeholder="Buscar un producto…" aria-label="Buscar"></label>
-    <button class="ghost" id="copyPrevious">📅 Copiar mes anterior</button>
-  </div>
-  <nav class="chips" id="chips" aria-label="Categorías"></nav>
+    <div class="progress-card" id="progressCard">
+      <div class="progress-row"><strong id="count">0 de 0</strong><span id="hello">¡Vamos paso a paso!</span></div>
+      <div class="bar"><i id="progress"></i></div>
+      <div class="save-row"><small id="savedAt">Aún sin guardar</small><button class="save" id="saveList">💾 Guardar</button></div>
+    </div>
 
-  <div id="lists"></div>
-  <footer>Tu lista se guarda sola en este navegador y pasa al mes siguiente automáticamente.</footer>
+    <div class="toolbar">
+      <label class="search"><input id="search" type="search" placeholder="Buscar…" aria-label="Buscar"></label>
+      <button class="ghost" id="copyPrevious">📅 Copiar mes anterior</button>
+    </div>
+    <nav class="chips" id="chips" aria-label="Categorías"></nav>
+
+    <div id="lists"></div>
+    <footer>Tu lista se guarda sola en este navegador y pasa al mes siguiente automáticamente.</footer>
+  </div>
 </main>
 
 <script>
-const defaults={
- 'Despensa':['Arroz','Fideos','Salsa de tomate','Caldo de gallina','Harina','Azúcar','Aceite','Atún','Porotos','Compotas','Jaleas','Leche condensada','Leche','Jugos individuales','Té','Té de canela','Pan rallado','Chispas de chocolate','Crema en caja','Mantequilla'],
- 'Refrigerador':['Mayonesa','Ketchup','Mostaza','Queso','Queso rallado','Queso crema','Jamón','Yogur','Salchichas'],
- 'Carnes y congelados':['Carne','Carne molida','Pollo / pechuga de pollo','Hamburguesas','Bistec','Chuletas','Lomito','Churrasco','Reineta o salmón'],
- 'Frutas y verduras':['Champiñones','Plátano','Frutas o verduras faltantes'],
- 'Baño y cuidado personal':['Papel higiénico','Shampoo','Acondicionador','Jabón líquido','Pasta de dientes'],
- 'Limpieza del hogar':['Cloro','Limpiador de piso','Lavalozas','Limpiador multiuso','Bolsas de basura','Esponja','Virutilla','Desodorante ambiental']};
-const icons={'Despensa':'🥫','Refrigerador':'🧀','Carnes y congelados':'❄️','Frutas y verduras':'🍎','Baño y cuidado personal':'🧴','Limpieza del hogar':'🧽'};
+/* ---------- Módulos incorporados ---------- */
+const BUILTIN = {
+  compras: {
+    id:'compras', builtin:true, icon:'🛒', name:'Compras de casa',
+    tagline:'Marca lo que compras y no olvides nada.', kind:'compras',
+    defaults:{
+      'Despensa':['Arroz','Fideos','Salsa de tomate','Caldo de gallina','Harina','Azúcar','Aceite','Atún','Porotos','Compotas','Jaleas','Leche condensada','Leche','Jugos individuales','Té','Té de canela','Pan rallado','Chispas de chocolate','Crema en caja','Mantequilla'],
+      'Refrigerador':['Mayonesa','Ketchup','Mostaza','Queso','Queso rallado','Queso crema','Jamón','Yogur','Salchichas'],
+      'Carnes y congelados':['Carne','Carne molida','Pollo / pechuga de pollo','Hamburguesas','Bistec','Chuletas','Lomito','Churrasco','Reineta o salmón'],
+      'Frutas y verduras':['Champiñones','Plátano','Frutas o verduras faltantes'],
+      'Baño y cuidado personal':['Papel higiénico','Shampoo','Acondicionador','Jabón líquido','Pasta de dientes'],
+      'Limpieza del hogar':['Cloro','Limpiador de piso','Lavalozas','Limpiador multiuso','Bolsas de basura','Esponja','Virutilla','Desodorante ambiental']
+    },
+    catIcons:{'Despensa':'🥫','Refrigerador':'🧀','Carnes y congelados':'❄️','Frutas y verduras':'🍎','Baño y cuidado personal':'🧴','Limpieza del hogar':'🧽'}
+  },
+  'colaciones-sofia': {
+    id:'colaciones-sofia', builtin:true, icon:'🍎', name:'Colaciones Sofía',
+    tagline:'Elige qué colación lleva Sofía cada día.', kind:'checklist',
+    defaults:{
+      'Lunes':['Fruta','Yogurt','Sandwich','Galletas de agua','Barrita de cereal','Agua'],
+      'Martes':['Fruta','Yogurt','Sandwich','Galletas de agua','Barrita de cereal','Agua'],
+      'Miércoles':['Fruta','Yogurt','Sandwich','Galletas de agua','Barrita de cereal','Agua'],
+      'Jueves':['Fruta','Yogurt','Sandwich','Galletas de agua','Barrita de cereal','Agua'],
+      'Viernes':['Fruta','Yogurt','Sandwich','Galletas de agua','Barrita de cereal','Agua']
+    },
+    catIcons:{'Lunes':'🌞','Martes':'🌤️','Miércoles':'⛅','Jueves':'🌥️','Viernes':'🎉'}
+  }
+};
 
+/* ---------- Módulos creados por el usuario ---------- */
+function loadCustomModules(){ try{ return JSON.parse(localStorage.getItem('modulos-custom')||'[]') }catch{ return [] } }
+function saveCustomModules(list){ try{ localStorage.setItem('modulos-custom', JSON.stringify(list)) }catch{} }
+function allModules(){ return [BUILTIN.compras, BUILTIN['colaciones-sofia'], ...loadCustomModules()] }
+function getModule(id){ return allModules().find(m=>m.id===id) || BUILTIN.compras }
+
+function currentModuleId(){ try{ return localStorage.getItem('modulo-actual')||'' }catch{ return '' } }
+function setCurrentModuleId(id){ try{ localStorage.setItem('modulo-actual', id) }catch{} }
+
+/* ---------- Helpers de datos por módulo + mes ---------- */
 const $=s=>document.querySelector(s);
+const home=$('#home'), appView=$('#appView');
 const month=$('#month'), lists=$('#lists'), search=$('#search'), chips=$('#chips');
-let lastDeleted=null, wasComplete=false;
-const isOk=i=>(Number(i.qty)||0)>0&&(Number(i.bought)||0)>0, isDone=i=>!!i.done||isOk(i);
+let lastDeleted=null, wasComplete=false, mod=null;
+
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const slug=s=>'cat-'+s.normalize('NFD').replace(/[^\w]+/g,'-');
-
 const localMonth=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`};
-month.value=localMonth();
-const key=()=>`compras-${month.value}`;
-function previousKey(){const [y,m]=month.value.split('-').map(Number);const d=new Date(y,m-2,1);return `compras-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
-const initial=()=>Object.fromEntries(Object.entries(defaults).map(([c,a])=>[c,a.map(name=>({name,qty:0,bought:0,done:false}))]));
-const cloneForNewMonth=data=>Object.fromEntries(Object.entries(data).map(([c,items])=>[c,items.map(i=>({...i,done:false,bought:0}))]));
-function load(){try{const s=localStorage.getItem(key());if(s)return JSON.parse(s);const p=localStorage.getItem(previousKey());return p?cloneForNewMonth(JSON.parse(p)):initial()}catch{return initial()}}
-function save(d){try{localStorage.setItem(key(),JSON.stringify(d))}catch{alert('No se pudo guardar en este navegador.')}}
 
+function dataKey(){ return mod.id==='compras' ? `compras-${month.value}` : `compras-${mod.id}-${month.value}` }
+function stampKey(){ return mod.id==='compras' ? `compras-guardado-${month.value}` : `compras-guardado-${mod.id}-${month.value}` }
+function previousKey(){
+  const [y,m]=month.value.split('-').map(Number); const d=new Date(y,m-2,1);
+  const pm=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  return mod.id==='compras' ? `compras-${pm}` : `compras-${mod.id}-${pm}`;
+}
+function itemFactory(name){ return mod.kind==='compras' ? {name,qty:0,bought:0,done:false} : {name,done:false} }
+const isOk=i=>mod.kind==='compras' && (Number(i.qty)||0)>0 && (Number(i.bought)||0)>0;
+const isDone=i=>!!i.done||isOk(i);
+function catIcon(cat){ return (mod.catIcons&&mod.catIcons[cat]) || mod.icon || '📝' }
+
+const initial=()=>Object.fromEntries(Object.entries(mod.defaults||{}).map(([c,a])=>[c,a.map(itemFactory)]));
+function cloneForNewMonth(data){
+  return Object.fromEntries(Object.entries(data).map(([c,items])=>[c,items.map(i=>mod.kind==='compras'?{...i,done:false,bought:0}:{...i,done:false})]));
+}
+function load(){
+  try{
+    const s=localStorage.getItem(dataKey()); if(s)return JSON.parse(s);
+    const p=localStorage.getItem(previousKey()); return p?cloneForNewMonth(JSON.parse(p)):initial();
+  }catch{ return initial() }
+}
+function save(d){ try{ localStorage.setItem(dataKey(), JSON.stringify(d)) }catch{ alert('No se pudo guardar en este navegador.') } }
+
+/* ---------- Render vista de módulo ---------- */
 function render(){
   const data=load(), q=search.value.trim().toLocaleLowerCase();
   lists.innerHTML=''; chips.innerHTML=''; let total=0, done=0;
@@ -180,33 +283,35 @@ function render(){
     total+=matching.length; done+=matching.filter(isDone).length;
 
     const chip=document.createElement('button');chip.className='chip';
-    chip.innerHTML=`${icons[cat]||'📝'} ${esc(cat)}<small>${cDone}/${items.length}</small>`;
+    chip.innerHTML=`${catIcon(cat)} ${esc(cat)}<small>${cDone}/${items.length}</small>`;
     chip.onclick=()=>document.getElementById(slug(cat))?.scrollIntoView({behavior:'smooth'});
     chips.append(chip);
 
     const sec=document.createElement('section');sec.id=slug(cat);
-    sec.innerHTML=`<h2><span class="cat-icon">${icons[cat]||'📝'}</span><span class="cat-title">${esc(cat)}<small>${cDone} de ${items.length} comprados</small></span><button class="add-here">＋ Agregar</button></h2>
-      <div class="cat-bar"><i style="width:${items.length?cDone/items.length*100:0}%"></i></div>
-      <div class="cols"><span></span><span>Producto</span><span>Lista</span><span>Comprado</span><span></span></div>
+    sec.innerHTML=`<h2><span class="cat-icon">${catIcon(cat)}</span><span class="cat-title">${esc(cat)}<small>${cDone} de ${items.length} listo${cDone===1?'':'s'}</small></span><button class="add-here">＋ Agregar</button></h2>
+      ${mod.kind==='compras'?'<div class="cat-bar"><i style="width:'+(items.length?cDone/items.length*100:0)+'%"></i></div><div class="cols"><span></span><span>Producto</span><span>Lista</span><span>Comprado</span><span></span></div>':'<div class="cat-bar"><i style="width:'+(items.length?cDone/items.length*100:0)+'%"></i></div>'}
       <div class="items"></div>
       <form class="inline-add"><input required placeholder="Agregar a ${esc(cat)}"><button>Guardar</button></form>`;
     const box=sec.querySelector('.items'), add=sec.querySelector('.inline-add');
     sec.querySelector('.add-here').onclick=()=>{add.classList.toggle('open');if(add.classList.contains('open'))add.querySelector('input').focus()};
-    add.onsubmit=e=>{e.preventDefault();const v=add.querySelector('input').value.trim();if(v){data[cat].push({name:v,qty:0,bought:0,done:false});save(data);render()}};
+    add.onsubmit=e=>{e.preventDefault();const v=add.querySelector('input').value.trim();if(v){data[cat].push(itemFactory(v));save(data);render()}};
 
     matching.forEach(item=>{
       const n=Number(item.qty)||0, b=Number(item.bought)||0, ok=isOk(item), row=document.createElement('div');
-      row.className='item'+(ok?' ok':item.done?' done':'');
-      row.innerHTML=`<input type="checkbox" class="check" ${item.done||ok?'checked':''} ${ok?'disabled title="Comprado: Lista y Comprado tienen cantidad"':''} aria-label="Marcar ${esc(item.name)}">
+      const simple=mod.kind!=='compras';
+      row.className='item'+(simple?' simple':'')+(ok?' ok':item.done?' done':'');
+      row.innerHTML=`<input type="checkbox" class="check" ${item.done||ok?'checked':''} ${ok?'disabled title="Listo: Lista y Comprado tienen cantidad"':''} aria-label="Marcar ${esc(item.name)}">
         <span class="name">${esc(item.name)}${ok?'<em class="ok-badge">✓ Comprado</em>':''}</span>
-        <div class="qty" role="group" aria-label="Cantidad estimada de ${esc(item.name)}"><span class="lbl">Lista</span><button class="minus" aria-label="Restar lista">−</button><output>${n}</output><button class="plus" aria-label="Sumar lista">+</button></div>
-        <div class="qty bought" role="group" aria-label="Cantidad comprada de ${esc(item.name)}"><span class="lbl">Comprado</span><button class="bminus" aria-label="Restar comprado">−</button><output>${b}</output><button class="bplus" aria-label="Sumar comprado">+</button></div>
+        ${simple?'':`<div class="qty" role="group" aria-label="Cantidad estimada de ${esc(item.name)}"><span class="lbl">Lista</span><button class="minus" aria-label="Restar lista">−</button><output>${n}</output><button class="plus" aria-label="Sumar lista">+</button></div>
+        <div class="qty bought" role="group" aria-label="Cantidad comprada de ${esc(item.name)}"><span class="lbl">Comprado</span><button class="bminus" aria-label="Restar comprado">−</button><output>${b}</output><button class="bplus" aria-label="Sumar comprado">+</button></div>`}
         <button class="remove" title="Eliminar ${esc(item.name)}" aria-label="Eliminar ${esc(item.name)}">🗑</button>`;
       row.querySelector('.check').onchange=e=>{item.done=e.target.checked;save(data);render()};
-      row.querySelector('.minus').onclick=()=>{item.qty=Math.max(0,n-1);save(data);render()};
-      row.querySelector('.plus').onclick=()=>{item.qty=n+1;save(data);render()};
-      row.querySelector('.bminus').onclick=()=>{item.bought=Math.max(0,b-1);save(data);render()};
-      row.querySelector('.bplus').onclick=()=>{item.bought=b+1;save(data);render()};
+      if(!simple){
+        row.querySelector('.minus').onclick=()=>{item.qty=Math.max(0,n-1);save(data);render()};
+        row.querySelector('.plus').onclick=()=>{item.qty=n+1;save(data);render()};
+        row.querySelector('.bminus').onclick=()=>{item.bought=Math.max(0,b-1);save(data);render()};
+        row.querySelector('.bplus').onclick=()=>{item.bought=b+1;save(data);render()};
+      }
       row.querySelector('.remove').onclick=()=>{lastDeleted={cat,item,index:data[cat].indexOf(item)};data[cat]=data[cat].filter(x=>x!==item);save(data);render()};
       box.append(row);
     });
@@ -218,7 +323,19 @@ function render(){
     }
     lists.append(sec);
   });
-  if(!lists.children.length)lists.innerHTML='<div class="empty">No encontré productos con esa búsqueda 🤔</div>';
+
+  // chip para agregar categoría nueva
+  const addCat=document.createElement('button');addCat.className='chip add-cat';addCat.textContent='＋ Categoría';
+  addCat.onclick=()=>{
+    const name=prompt('Nombre de la nueva categoría:');
+    if(!name)return; const clean=name.trim(); if(!clean)return;
+    if(data[clean]){alert('Ya existe esa categoría.');return}
+    data[clean]=[]; save(data); render();
+  };
+  chips.append(addCat);
+
+  if(!Object.keys(data).length)lists.innerHTML='<div class="empty">Aún no hay categorías. Usa "＋ Categoría" para crear la primera 🌱</div>';
+  else if(!lists.children.length)lists.innerHTML='<div class="empty">No encontré nada con esa búsqueda 🤔</div>';
   const complete=total>0&&done===total;
   $('#count').textContent=`${done} de ${total}`;
   $('#hello').textContent=complete?'¡Lista completa! 🎉':done?'¡Vas muy bien! 💚':'¡Vamos paso a paso!';
@@ -226,24 +343,111 @@ function render(){
   if(complete&&!wasComplete){const c=$('#progressCard');c.classList.remove('confetti');void c.offsetWidth;c.classList.add('confetti')}
   wasComplete=complete;
 }
-const stampKey=()=>`compras-guardado-${month.value}`;
-function showStamp(){let t='';try{t=localStorage.getItem(stampKey())||''}catch{}$('#savedAt').textContent=t?`Guardada el ${t}`:'Aún sin guardar'}
+function showStamp(){let t='';try{t=localStorage.getItem(stampKey())||''}catch{}$('#savedAt').textContent=t?`Guardado el ${t}`:'Aún sin guardar'}
 $('#saveList').onclick=()=>{
   save(load());
   const t=new Date().toLocaleString('es-CL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
   try{localStorage.setItem(stampKey(),t)}catch{}
-  const b=$('#saveList');b.textContent='✓ Compra guardada';b.classList.add('ok');showStamp();
-  setTimeout(()=>{b.textContent='💾 Guardar compra';b.classList.remove('ok')},2000);
+  const b=$('#saveList');b.textContent='✓ Guardado';b.classList.add('ok');showStamp();
+  setTimeout(()=>{b.textContent='💾 Guardar';b.classList.remove('ok')},2000);
 };
 month.onchange=()=>{lastDeleted=null;render();showStamp()};
 search.oninput=render;
 $('#copyPrevious').onclick=()=>{
   const raw=localStorage.getItem(previousKey());
   if(!raw){alert('No hay una lista guardada para el mes anterior.');return}
-  if(!confirm('¿Copiar los productos del mes anterior? Se reemplazará la lista del mes actual.'))return;
-  try{save(cloneForNewMonth(JSON.parse(raw)));lastDeleted=null;render()}catch{alert('No se pudo copiar la lista anterior.')}
+  if(!confirm('¿Copiar los datos del mes anterior? Se reemplazará lo del mes actual.'))return;
+  try{save(cloneForNewMonth(JSON.parse(raw)));lastDeleted=null;render()}catch{alert('No se pudo copiar el mes anterior.')}
 };
-render();showStamp();
+$('#goHome').onclick=()=>{ showHome() };
+
+/* ---------- Vista de módulo: abrir ---------- */
+function openModule(id){
+  mod=getModule(id); setCurrentModuleId(id);
+  home.hidden=true; appView.hidden=false;
+  $('#modTitle').textContent=`${mod.icon} ${mod.name}`;
+  $('#modTag').textContent=mod.tagline||'';
+  month.value=localMonth();
+  lastDeleted=null; wasComplete=false;
+  render(); showStamp();
+}
+
+/* ---------- Home: listar módulos ---------- */
+function showHome(){
+  appView.hidden=true; home.hidden=false;
+  renderHome();
+}
+function renderHome(){
+  const grid=$('#modGrid'); grid.innerHTML='';
+  allModules().forEach(m=>{
+    const card=document.createElement('div'); card.className='mod-card';
+    card.innerHTML=`${m.builtin?'':'<button class="mod-del" title="Eliminar módulo" aria-label="Eliminar módulo">🗑</button>'}
+      <div class="mod-icon">${m.icon}</div>
+      <div class="mod-name">${esc(m.name)}</div>
+      <div class="mod-tag">${esc(m.tagline||'')}</div>
+      <button class="mod-open">Abrir →</button>`;
+    card.querySelector('.mod-open').onclick=()=>openModule(m.id);
+    card.querySelector('.mod-name').onclick=()=>openModule(m.id);
+    const del=card.querySelector('.mod-del');
+    if(del)del.onclick=(e)=>{
+      e.stopPropagation();
+      if(!confirm(`¿Eliminar el módulo "${m.name}"? No se borran los datos ya guardados, pero desaparece de esta lista.`))return;
+      saveCustomModules(loadCustomModules().filter(x=>x.id!==m.id));
+      renderHome();
+    };
+    grid.append(card);
+  });
+  const addCard=document.createElement('button'); addCard.className='mod-card new'; addCard.textContent='＋ Crear módulo';
+  addCard.onclick=showModuleForm;
+  grid.append(addCard);
+  $('#modFormHolder').innerHTML='';
+}
+
+function showModuleForm(){
+  const holder=$('#modFormHolder');
+  holder.innerHTML=`
+    <div class="form-card">
+      <h3>Crear módulo nuevo</h3>
+      <div class="form-row">
+        <div><label>Nombre</label><input type="text" id="newName" placeholder="Ej: Regalos navidad" required></div>
+        <div><label>Icono (emoji, opcional)</label><input type="text" id="newIcon" placeholder="📝" maxlength="4"></div>
+      </div>
+      <div>
+        <label>Tipo de módulo</label>
+        <div class="form-row">
+          <label class="kind-opt checked"><input type="radio" name="newKind" value="checklist" checked><span><b>Solo marcar</b><span>Cada ítem se marca con una casilla. Ideal para listas simples.</span></span></label>
+          <label class="kind-opt"><input type="radio" name="newKind" value="compras"><span><b>Con cantidades</b><span>Cada ítem tiene "Lista" (estimado) y "Comprado" (real), como Compras de casa.</span></span></label>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="cancel" id="cancelForm">Cancelar</button>
+        <button type="button" class="submit" id="submitForm">Crear módulo</button>
+      </div>
+    </div>`;
+  holder.querySelectorAll('.kind-opt').forEach(opt=>{
+    opt.querySelector('input').addEventListener('change',()=>{
+      holder.querySelectorAll('.kind-opt').forEach(o=>o.classList.remove('checked'));
+      opt.classList.add('checked');
+    });
+  });
+  $('#cancelForm').onclick=()=>{ holder.innerHTML=''; };
+  $('#submitForm').onclick=()=>{
+    const name=$('#newName').value.trim();
+    if(!name){alert('Ponle un nombre al módulo.');$('#newName').focus();return}
+    const icon=$('#newIcon').value.trim()||'📝';
+    const kind=holder.querySelector('input[name=newKind]:checked').value;
+    const id='custom-'+Date.now();
+    const list=loadCustomModules();
+    list.push({id,builtin:false,icon,name,tagline:kind==='compras'?'Con cantidades: lista vs. comprado.':'Marca cada ítem al completarlo.',kind,defaults:{},catIcons:{}});
+    saveCustomModules(list);
+    holder.innerHTML='';
+    openModule(id);
+  };
+}
+
+/* ---------- Arranque ---------- */
+const startId=currentModuleId();
+if(startId && getModule(startId)) openModule(startId); else showHome();
 </script>
 </body>
 </html>

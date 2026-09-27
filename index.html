@@ -133,6 +133,21 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
   .ok-badge{margin-left:0;margin-top:4px;display:flex;width:fit-content}
   h2{padding:12px}.cat-bar{margin:0 12px 4px}.items{padding:2px 4px 8px}
 }
+#historyView{margin-top:6px}
+.hist-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 14px;flex-wrap:wrap}
+.hist-empty{text-align:center;color:var(--muted);padding:40px 10px}
+.hist-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:10px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:var(--shadow);flex-wrap:wrap}
+.hist-card .hist-meta{display:flex;flex-direction:column;gap:2px}
+.hist-time{font-weight:800;font-size:15px}
+.hist-sub{color:var(--muted);font-size:13px}
+.hist-actions{display:flex;gap:8px}
+.hist-open-btn{border:0;background:var(--primary);color:#fff;border-radius:12px;padding:9px 14px;font-weight:700}
+.hist-del{border:0;background:var(--danger-soft);color:var(--danger);border-radius:10px;padding:9px 11px;font-weight:700}
+.hist-detail-head{display:flex;flex-direction:column;gap:2px;margin:4px 4px 14px}
+.hist-item{display:grid;grid-template-columns:26px 1fr var(--cw) 34px;align-items:center;gap:10px;padding:8px;border-radius:14px}
+.hist-item+.hist-item{border-top:1px solid var(--line)}
+.hist-item .lista-badge{display:inline-block}
+@media(max-width:560px){.hist-item{grid-template-columns:26px minmax(0,1fr) auto;grid-template-areas:"c n r" "c b b"}.hist-item .check{grid-area:c}.hist-item .name{grid-area:n}.hist-item .qty{grid-area:b}}
 @media print{.hero,.toolbar,.chips,.add-here,.remove,.qty button,.progress-card{display:none}section{box-shadow:none;border:1px solid #ccc;break-inside:avoid}}
 </style>
 </head>
@@ -155,11 +170,16 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
     <label class="search"><input id="search" type="search" placeholder="Buscar un producto…" aria-label="Buscar"></label>
     <button class="ghost" id="copyPrevious">📅 Copiar mes anterior</button>
     <button class="ghost primary" id="newModule">＋ Nuevo módulo</button>
+    <button class="ghost" id="openHistory">🕐 Historial</button>
   </div>
   <div class="shop-banner">🛍️ Modo compra: la lista queda fija, solo marca "Comprado" a medida que metes cosas al carro.</div>
   <nav class="chips" id="chips" aria-label="Categorías"></nav>
 
   <div id="lists"></div>
+  <div id="historyView" hidden>
+    <div class="hist-toolbar"><button class="ghost" id="histBack">← Volver a la lista</button></div>
+    <div id="histBody"></div>
+  </div>
   <footer>Tu lista se guarda sola en este navegador y pasa al mes siguiente automáticamente.</footer>
 </main>
 
@@ -262,7 +282,9 @@ function render(){
 const stampKey=()=>`compras-guardado-${month.value}`;
 function showStamp(){let t='';try{t=localStorage.getItem(stampKey())||''}catch{}$('#savedAt').textContent=t?`Guardada el ${t}`:'Aún sin guardar'}
 $('#saveList').onclick=()=>{
-  save(load());
+  const _d=load();
+  save(_d);
+  pushHistorySnapshot(_d);
   const t=new Date().toLocaleString('es-CL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
   try{localStorage.setItem(stampKey(),t)}catch{}
   const b=$('#saveList');b.textContent='✓ Compra guardada';b.classList.add('ok');showStamp();
@@ -297,6 +319,89 @@ shopBtn.onclick=()=>{
   try{localStorage.setItem('modo-compra', document.body.classList.contains('shopping')?'1':'0')}catch{}
   applyShopMode();
 };
+/* ---------- Historial de listas guardadas ---------- */
+function loadHistory(){ try{ return JSON.parse(localStorage.getItem('historial-guardados')||'[]') }catch{ return [] } }
+function saveHistoryArr(arr){ try{ localStorage.setItem('historial-guardados', JSON.stringify(arr)) }catch{} }
+function pushHistorySnapshot(data){
+  const now=new Date();
+  const entry={id:'h'+now.getTime(), tsRaw:now.toISOString(),
+    ts:now.toLocaleString('es-CL',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}),
+    mes:month.value, data:JSON.parse(JSON.stringify(data))};
+  const arr=loadHistory(); arr.unshift(entry);
+  if(arr.length>60) arr.length=60;
+  saveHistoryArr(arr);
+}
+function persistHistoryEntry(entry){
+  const arr=loadHistory(); const idx=arr.findIndex(x=>x.id===entry.id);
+  if(idx>-1){ arr[idx]=entry; saveHistoryArr(arr); }
+}
+const historyView=$('#historyView'), histBody=$('#histBody'), histBack=$('#histBack'), shopBanner=document.querySelector('.shop-banner');
+let histDetailId=null;
+function showHistoryList(){
+  histDetailId=null;
+  lists.hidden=true; chips.hidden=true; if(shopBanner)shopBanner.hidden=true;
+  historyView.hidden=false;
+  renderHistoryList();
+}
+function closeHistory(){
+  lists.hidden=false; chips.hidden=false; if(shopBanner)shopBanner.hidden=false;
+  historyView.hidden=true;
+}
+histBack.onclick=()=>{ if(histDetailId){ histDetailId=null; renderHistoryList(); } else { closeHistory(); } };
+$('#openHistory').onclick=showHistoryList;
+function renderHistoryList(){
+  histBack.textContent='← Volver a la lista';
+  const arr=loadHistory();
+  if(!arr.length){ histBody.innerHTML='<div class="hist-empty">Aún no has guardado ninguna lista. Presiona "💾 Guardar compra" para crear la primera 📋</div>'; return; }
+  histBody.innerHTML='';
+  arr.forEach(entry=>{
+    const flat=Object.values(entry.data).flat();
+    const total=flat.length, done=flat.filter(isDone).length;
+    const card=document.createElement('div'); card.className='hist-card';
+    card.innerHTML=`<div class="hist-meta"><span class="hist-time">🕐 ${esc(entry.ts)}</span><span class="hist-sub">${done} de ${total} comprados</span></div>
+      <div class="hist-actions"><button class="hist-open-btn">Abrir →</button><button class="hist-del" title="Eliminar" aria-label="Eliminar lista guardada">🗑</button></div>`;
+    card.querySelector('.hist-open-btn').onclick=()=>{ histDetailId=entry.id; renderHistoryDetail(entry); };
+    card.querySelector('.hist-del').onclick=()=>{
+      if(!confirm(`¿Eliminar la lista guardada del ${entry.ts}? No se puede deshacer.`))return;
+      saveHistoryArr(loadHistory().filter(x=>x.id!==entry.id));
+      renderHistoryList();
+    };
+    histBody.append(card);
+  });
+}
+function renderHistoryDetail(entry){
+  histBack.textContent='← Volver al historial';
+  histBody.innerHTML='';
+  const head=document.createElement('div'); head.className='hist-detail-head';
+  head.innerHTML=`<strong class="hist-time">🕐 ${esc(entry.ts)}</strong><span class="hist-sub">Solo marca "Comprado". Lo demás queda tal como lo guardaste.</span>`;
+  histBody.append(head);
+  const data=entry.data; let total=0,done=0;
+  Object.entries(data).forEach(([cat,items])=>{
+    if(!items.length)return;
+    const cDone=items.filter(isDone).length; total+=items.length; done+=cDone;
+    const sec=document.createElement('section');
+    sec.innerHTML=`<h2><span class="cat-icon">${icons[cat]||'📝'}</span><span class="cat-title">${esc(cat)}<small>${cDone} de ${items.length} comprados</small></span></h2>
+      <div class="cat-bar"><i style="width:${items.length?cDone/items.length*100:0}%"></i></div>
+      <div class="items"></div>`;
+    const box=sec.querySelector('.items');
+    items.forEach(item=>{
+      const n=Number(item.qty)||0, b=Number(item.bought)||0, ok=isOk(item), row=document.createElement('div');
+      row.className='item hist-item'+(ok?' ok':item.done?' done':'');
+      row.innerHTML=`<input type="checkbox" class="check" ${item.done||ok?'checked':''} ${ok?'disabled title="Comprado: Lista y Comprado tienen cantidad"':''} aria-label="Marcar ${esc(item.name)}">
+        <span class="name">${esc(item.name)}${n>0?`<span class="lista-badge">🧾 Lista: ${n}</span>`:''}${ok?'<em class="ok-badge">✓ Comprado</em>':''}</span>
+        <div class="qty bought" role="group" aria-label="Cantidad comprada de ${esc(item.name)}"><button class="bminus" aria-label="Restar comprado">−</button><output>${b}</output><button class="bplus" aria-label="Sumar comprado">+</button></div>`;
+      row.querySelector('.check').onchange=e=>{item.done=e.target.checked;persistHistoryEntry(entry);renderHistoryDetail(entry)};
+      row.querySelector('.bminus').onclick=()=>{item.bought=Math.max(0,b-1);persistHistoryEntry(entry);renderHistoryDetail(entry)};
+      row.querySelector('.bplus').onclick=()=>{item.bought=b+1;persistHistoryEntry(entry);renderHistoryDetail(entry)};
+      box.append(row);
+    });
+    histBody.append(sec);
+  });
+  const foot=document.createElement('div'); foot.className='hist-sub'; foot.style.textAlign='center'; foot.style.margin='14px 0';
+  foot.textContent=`${done} de ${total} comprados en esta lista guardada`;
+  histBody.append(foot);
+}
+
 render();showStamp();
 </script>
 </body>

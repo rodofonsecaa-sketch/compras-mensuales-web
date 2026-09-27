@@ -150,6 +150,9 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
 .hist-item .lista-badge{display:inline-block}
 @media(max-width:560px){.hist-item{grid-template-columns:26px minmax(0,1fr) auto;grid-template-areas:"c n r" "c b b"}.hist-item .check{grid-area:c}.hist-item .name{grid-area:n}.hist-item .qty{grid-area:b}}
 @media print{.hero,.toolbar,.chips,.add-here,.remove,.qty button,.progress-card{display:none}section{box-shadow:none;border:1px solid #ccc;break-inside:avoid}}
+.cloud-status{font-size:12px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:5px}
+.cloud-status.on::before{content:"●";color:#16a34a}
+.cloud-status.off::before{content:"●";color:#a1a1aa}
 </style>
 </head>
 <body>
@@ -172,9 +175,11 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
     <button class="ghost" id="copyPrevious">📅 Copiar mes anterior</button>
     <button class="ghost primary" id="newModule">＋ Nuevo módulo</button>
     <button class="ghost" id="openHistory">🕐 Historial</button>
+    <button class="ghost" id="refreshCloud">🔄 Actualizar</button>
     <button class="ghost" id="exportData">⬇️ Exportar datos</button>
     <button class="ghost" id="importBtn">⬆️ Importar datos</button>
     <input type="file" id="importFile" accept="application/json" hidden>
+    <span class="cloud-status off" id="cloudStatus">● conectando…</span>
   </div>
   <div class="shop-banner">🛍️ Modo compra: la lista queda fija, solo marca "Comprado" a medida que metes cosas al carro.</div>
   <nav class="chips" id="chips" aria-label="Categorías"></nav>
@@ -184,9 +189,10 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
     <div class="hist-toolbar"><button class="ghost" id="histBack">← Volver a la lista</button></div>
     <div id="histBody"></div>
   </div>
-  <footer>Tu lista se guarda sola en este navegador y pasa al mes siguiente automáticamente.</footer>
+  <footer>Tu lista se guarda sola en este navegador y pasa al mes siguiente automáticamente. Con conexión a internet, también se sincroniza con los demás dispositivos que abran este mismo enlace.</footer>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 const defaults={
  'Despensa':['Arroz','Fideos','Salsa de tomate','Caldo de gallina','Harina','Azúcar','Aceite','Atún','Porotos','Compotas','Jaleas','Leche condensada','Leche','Jugos individuales','Té','Té de canela','Pan rallado','Chispas de chocolate','Crema en caja','Mantequilla'],
@@ -197,6 +203,30 @@ const defaults={
  'Limpieza del hogar':['Cloro','Limpiador de piso','Lavalozas','Limpiador multiuso','Bolsas de basura','Esponja','Virutilla','Desodorante ambiental'],
  'Colaciones Sofía':['Fruta','Yogurt','Sandwich','Galletas de agua','Barrita de cereal','Jugo individual']};
 const icons={'Despensa':'🥫','Refrigerador':'🧀','Carnes y congelados':'❄️','Frutas y verduras':'🍎','Baño y cuidado personal':'🧴','Limpieza del hogar':'🧽','Colaciones Sofía':'🎒'};
+
+/* ---------- Sincronización en la nube (Supabase) ----------
+   Tabla pública "shopping_data" (id text primary key, payload jsonb, updated_at timestamptz).
+   Sin login: cualquiera con el enlace lee y escribe la misma fila. Es una lista de compras,
+   sin datos sensibles, por eso se aceptó ese trade-off. */
+const SUPA_URL='https://htxwaeseqxdopimantlw.supabase.co';
+const SUPA_KEY='sb_publishable_cqYQhlAYI2lnJXfRgbVUxA_0nOay28o';
+let sb=null;
+try{ if(window.supabase&&window.supabase.createClient) sb=window.supabase.createClient(SUPA_URL,SUPA_KEY); }catch{}
+async function cloudPush(id,payload){
+  if(!sb)return;
+  try{ await sb.from('shopping_data').upsert({id,payload,updated_at:new Date().toISOString()}); setCloudStatus(true) }
+  catch{ setCloudStatus(false) }
+}
+async function cloudPull(id){
+  if(!sb)return null;
+  try{ const {data,error}=await sb.from('shopping_data').select('payload').eq('id',id).maybeSingle(); setCloudStatus(!error); return (error||!data)?null:data.payload }
+  catch{ setCloudStatus(false); return null }
+}
+function setCloudStatus(ok){
+  const el=document.getElementById('cloudStatus'); if(!el)return;
+  el.className='cloud-status '+(ok?'on':'off');
+  el.textContent=ok?'● sincronizado':'● sin conexión';
+}
 
 const $=s=>document.querySelector(s);
 const month=$('#month'), lists=$('#lists'), search=$('#search'), chips=$('#chips');
@@ -225,7 +255,7 @@ function load(){
     return p?withMissingDefaults(cloneForNewMonth(JSON.parse(p))):initial();
   }catch{ return initial() }
 }
-function save(d){try{localStorage.setItem(key(),JSON.stringify(d))}catch{alert('No se pudo guardar en este navegador.')}}
+function save(d){try{localStorage.setItem(key(),JSON.stringify(d))}catch{alert('No se pudo guardar en este navegador.')}cloudPush(key(),d)}
 
 function render(){
   const data=load(), q=search.value.trim().toLocaleLowerCase();
@@ -294,7 +324,7 @@ $('#saveList').onclick=()=>{
   const b=$('#saveList');b.textContent='✓ Compra guardada';b.classList.add('ok');showStamp();
   setTimeout(()=>{b.textContent='💾 Guardar compra';b.classList.remove('ok')},2000);
 };
-month.onchange=()=>{lastDeleted=null;render();showStamp()};
+month.onchange=()=>{lastDeleted=null;render();showStamp();cloudSyncMonth()};
 search.oninput=render;
 $('#copyPrevious').onclick=()=>{
   const raw=localStorage.getItem(previousKey());
@@ -325,7 +355,7 @@ shopBtn.onclick=()=>{
 };
 /* ---------- Historial de listas guardadas ---------- */
 function loadHistory(){ try{ return JSON.parse(localStorage.getItem('historial-guardados')||'[]') }catch{ return [] } }
-function saveHistoryArr(arr){ try{ localStorage.setItem('historial-guardados', JSON.stringify(arr)) }catch{} }
+function saveHistoryArr(arr){ try{ localStorage.setItem('historial-guardados', JSON.stringify(arr)) }catch{} cloudPush('historial-guardados',arr) }
 function pushHistorySnapshot(data){
   const now=new Date();
   const entry={id:'h'+now.getTime(), tsRaw:now.toISOString(),
@@ -454,7 +484,40 @@ $('#importFile').onchange=e=>{
   e.target.value='';
 };
 
+/* ---------- Traer lo último de la nube: al abrir, al cambiar de mes, al volver a la pestaña, o al tocar Actualizar ---------- */
+async function cloudSyncMonth(){
+  if(!sb)return;
+  const cloudMonth=await cloudPull(key());
+  if(cloudMonth){ localStorage.setItem(key(),JSON.stringify(cloudMonth)); render() }
+  else{ cloudPush(key(),load()) }
+}
+async function cloudSyncHistory(){
+  if(!sb)return;
+  const cloudHist=await cloudPull('historial-guardados');
+  const localHist=loadHistory();
+  if(cloudHist){
+    const byId={}; localHist.concat(cloudHist).forEach(h=>{ if(h&&h.id) byId[h.id]=h });
+    const merged=Object.values(byId).sort((a,b)=>(b.tsRaw||'').localeCompare(a.tsRaw||''));
+    if(merged.length>60) merged.length=60;
+    const changed=JSON.stringify(merged)!==JSON.stringify(localHist);
+    localStorage.setItem('historial-guardados',JSON.stringify(merged));
+    if(changed){
+      cloudPush('historial-guardados',merged);
+      if(!historyView.hidden){ if(histDetailId){ const e=merged.find(x=>x.id===histDetailId); if(e)renderHistoryDetail(e) } else renderHistoryList() }
+    }
+  }else if(localHist.length){ cloudPush('historial-guardados',localHist) }
+}
+async function cloudSyncAll(){ await Promise.all([cloudSyncMonth(),cloudSyncHistory()]) }
+$('#refreshCloud').onclick=async()=>{
+  const b=$('#refreshCloud'); b.disabled=true; b.textContent='🔄 Actualizando…';
+  await cloudSyncAll();
+  b.textContent='✓ Actualizado'; setTimeout(()=>{b.textContent='🔄 Actualizar';b.disabled=false},1500);
+};
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') cloudSyncAll() });
+if(sb) setInterval(cloudSyncAll,25000);
+
 render();showStamp();
+cloudSyncAll();
 </script>
 </body>
 </html>

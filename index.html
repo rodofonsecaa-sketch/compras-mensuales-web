@@ -77,6 +77,7 @@ section{background:var(--card);border-radius:22px;box-shadow:var(--shadow);margi
 h2{margin:0;padding:14px 16px;display:flex;align-items:center;gap:12px;font-size:17px}
 .cat-icon{width:40px;height:40px;border-radius:12px;background:var(--primary-soft);display:grid;place-items:center;font-size:21px;flex:none}
 .cat-title{flex:1;min-width:0}
+h2.plain .cat-title{flex:0 1 auto}
 .cat-title small{display:block;font-size:12.5px;font-weight:500;color:var(--muted)}
 .cat-bar{height:4px;background:var(--primary-soft);margin:0 16px 4px;border-radius:9px;overflow:hidden}
 .cat-bar i{display:block;height:100%;background:var(--primary-2);transition:width .3s}
@@ -339,12 +340,12 @@ const historyView=$('#historyView'), histBody=$('#histBody'), histBack=$('#histB
 let histDetailId=null;
 function showHistoryList(){
   histDetailId=null;
-  lists.hidden=true; chips.hidden=true; if(shopBanner)shopBanner.hidden=true;
+  lists.style.display='none'; chips.style.display='none'; if(shopBanner)shopBanner.style.display='none';
   historyView.hidden=false;
   renderHistoryList();
 }
 function closeHistory(){
-  lists.hidden=false; chips.hidden=false; if(shopBanner)shopBanner.hidden=false;
+  lists.style.display=''; chips.style.display=''; if(shopBanner)shopBanner.style.display='';
   historyView.hidden=true;
 }
 histBack.onclick=()=>{ if(histDetailId){ histDetailId=null; renderHistoryList(); } else { closeHistory(); } };
@@ -380,7 +381,7 @@ function renderHistoryDetail(entry){
     if(!items.length)return;
     const cDone=items.filter(isDone).length; total+=items.length; done+=cDone;
     const sec=document.createElement('section');
-    sec.innerHTML=`<h2><span class="cat-icon">${icons[cat]||'📝'}</span><span class="cat-title">${esc(cat)}<small>${cDone} de ${items.length} comprados</small></span></h2>
+    sec.innerHTML=`<h2 class="plain"><span class="cat-icon">${icons[cat]||'📝'}</span><span class="cat-title">${esc(cat)}<small>${cDone} de ${items.length} comprados</small></span></h2>
       <div class="cat-bar"><i style="width:${items.length?cDone/items.length*100:0}%"></i></div>
       <div class="items"></div>`;
     const box=sec.querySelector('.items');

@@ -172,6 +172,9 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
     <button class="ghost" id="copyPrevious">📅 Copiar mes anterior</button>
     <button class="ghost primary" id="newModule">＋ Nuevo módulo</button>
     <button class="ghost" id="openHistory">🕐 Historial</button>
+    <button class="ghost" id="exportData">⬇️ Exportar datos</button>
+    <button class="ghost" id="importBtn">⬆️ Importar datos</button>
+    <input type="file" id="importFile" accept="application/json" hidden>
   </div>
   <div class="shop-banner">🛍️ Modo compra: la lista queda fija, solo marca "Comprado" a medida que metes cosas al carro.</div>
   <nav class="chips" id="chips" aria-label="Categorías"></nav>
@@ -402,6 +405,54 @@ function renderHistoryDetail(entry){
   foot.textContent=`${done} de ${total} comprados en esta lista guardada`;
   histBody.append(foot);
 }
+
+/* ---------- Exportar / Importar (para pasar datos entre dispositivos) ---------- */
+function exportData(){
+  const data={};
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k&&(k.startsWith('compras-')||k==='historial-guardados')) data[k]=localStorage.getItem(k);
+  }
+  if(!Object.keys(data).length){ alert('Todavía no hay nada guardado en este dispositivo.'); return; }
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`compras-backup-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.append(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+$('#exportData').onclick=exportData;
+$('#importBtn').onclick=()=>$('#importFile').click();
+$('#importFile').onchange=e=>{
+  const file=e.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    let data;
+    try{ data=JSON.parse(reader.result) }catch{ alert('Ese archivo no se pudo leer. ¿Es el archivo exportado desde la app?'); return; }
+    const keys=Object.keys(data||{}).filter(k=>k.startsWith('compras-')||k==='historial-guardados');
+    if(!keys.length){ alert('Ese archivo no tiene datos de la app.'); return; }
+    if(!confirm(`Este archivo trae ${keys.length} lista(s)/registros guardados. Se sumarán a lo que ya tienes en este dispositivo (si una lista del mismo mes ya existe aquí, se reemplaza; el historial se combina, no se pierde). ¿Continuar?`))return;
+    try{
+      keys.forEach(k=>{
+        if(k==='historial-guardados'){
+          // combinar historial: no perder lo que ya hay en este dispositivo
+          let incoming=[]; try{ incoming=JSON.parse(data[k])||[] }catch{}
+          const current=loadHistory();
+          const byId={}; current.concat(incoming).forEach(h=>{ if(h&&h.id) byId[h.id]=h });
+          const merged=Object.values(byId).sort((a,b)=>(b.tsRaw||'').localeCompare(a.tsRaw||''));
+          if(merged.length>60) merged.length=60;
+          saveHistoryArr(merged);
+        }else{
+          localStorage.setItem(k, data[k]);
+        }
+      });
+      alert('Datos importados. La app se va a recargar.');
+      location.reload();
+    }catch{ alert('No se pudo importar: sin espacio en este navegador.'); }
+  };
+  reader.readAsText(file);
+  e.target.value='';
+};
 
 render();showStamp();
 </script>

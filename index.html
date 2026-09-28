@@ -61,6 +61,7 @@ body.shopping .shop-banner{display:flex}
 body.shopping .lista-badge{display:inline-block}
 body.shopping .qty:not(.bought){display:none}
 body.shopping .add-here,body.shopping .inline-add,body.shopping #newModule{display:none!important}
+body.shopping .edit-name,body.shopping .edit-cat{display:none!important}
 body.shopping .item{grid-template-columns:26px 1fr var(--cw) 34px}
 body.shopping .cols{grid-template-columns:26px 1fr var(--cw) 34px}
 body.shopping .cols span:nth-child(3){display:none}
@@ -153,6 +154,8 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
 .cloud-status{font-size:12px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:5px}
 .cloud-status.on::before{content:"●";color:#16a34a}
 .cloud-status.off::before{content:"●";color:#a1a1aa}
+.edit-name,.edit-cat{border:0;background:transparent;color:var(--muted);font-size:12.5px;margin-left:6px;padding:2px 5px;border-radius:7px;vertical-align:middle;cursor:pointer}
+.edit-name:hover,.edit-cat:hover{background:var(--primary-soft);color:var(--primary)}
 </style>
 </head>
 <body>
@@ -243,9 +246,34 @@ const itemFactory=name=>({name,qty:0,bought:0,done:false});
 const initial=()=>Object.fromEntries(Object.entries(defaults).map(([c,a])=>[c,a.map(itemFactory)]));
 const cloneForNewMonth=data=>Object.fromEntries(Object.entries(data).map(([c,items])=>[c,items.map(i=>({...i,done:false,bought:0}))]));
 // Agrega categorías nuevas de los valores por defecto (ej. módulos agregados después) sin tocar lo ya guardado.
+// Si el usuario renombró un módulo original, queda en "modulos-ocultos" para que no vuelva a aparecer con su nombre viejo.
+function loadHiddenDefaults(){ try{ return JSON.parse(localStorage.getItem('modulos-ocultos')||'[]') }catch{ return [] } }
+function saveHiddenDefaults(arr){ try{ localStorage.setItem('modulos-ocultos', JSON.stringify(arr)) }catch{} cloudPush('modulos-ocultos',arr) }
 function withMissingDefaults(data){
-  Object.entries(defaults).forEach(([cat,items])=>{ if(!data[cat]) data[cat]=items.map(itemFactory) });
+  const hidden=new Set(loadHiddenDefaults());
+  Object.entries(defaults).forEach(([cat,items])=>{ if(!data[cat]&&!hidden.has(cat)) data[cat]=items.map(itemFactory) });
   return data;
+}
+function renameCategory(data,oldName){
+  const val=prompt(`Nuevo nombre para "${oldName}":`,oldName);
+  if(val==null)return false;
+  const clean=val.trim();
+  if(!clean||clean===oldName)return false;
+  if(data[clean]){ alert('Ya existe un módulo con ese nombre.'); return false }
+  data[clean]=data[oldName]; delete data[oldName];
+  if(defaults[oldName]){
+    const hidden=loadHiddenDefaults();
+    if(!hidden.includes(oldName)){ hidden.push(oldName); saveHiddenDefaults(hidden) }
+  }
+  return true;
+}
+function renameItem(item){
+  const val=prompt('Nuevo nombre del producto:',item.name);
+  if(val==null)return false;
+  const clean=val.trim();
+  if(!clean||clean===item.name)return false;
+  item.name=clean;
+  return true;
 }
 function load(){
   try{
@@ -272,7 +300,7 @@ function render(){
     chips.append(chip);
 
     const sec=document.createElement('section');sec.id=slug(cat);
-    sec.innerHTML=`<h2><span class="cat-icon">${icons[cat]||'📝'}</span><span class="cat-title">${esc(cat)}<small>${cDone} de ${items.length} comprados</small></span><button class="add-here">＋ Agregar</button></h2>
+    sec.innerHTML=`<h2><span class="cat-icon">${icons[cat]||'📝'}</span><span class="cat-title">${esc(cat)}<button class="edit-cat" title="Renombrar módulo" aria-label="Renombrar módulo ${esc(cat)}">✏️</button><small>${cDone} de ${items.length} comprados</small></span><button class="add-here">＋ Agregar</button></h2>
       <div class="cat-bar"><i style="width:${items.length?cDone/items.length*100:0}%"></i></div>
       <div class="cols"><span></span><span>Producto</span><span>Lista</span><span>Comprado</span><span></span></div>
       <div class="items"></div>
@@ -280,12 +308,13 @@ function render(){
     const box=sec.querySelector('.items'), add=sec.querySelector('.inline-add');
     sec.querySelector('.add-here').onclick=()=>{add.classList.toggle('open');if(add.classList.contains('open'))add.querySelector('input').focus()};
     add.onsubmit=e=>{e.preventDefault();const v=add.querySelector('input').value.trim();if(v){data[cat].push(itemFactory(v));save(data);render()}};
+    sec.querySelector('.edit-cat').onclick=()=>{ if(renameCategory(data,cat)){ save(data); render(); } };
 
     matching.forEach(item=>{
       const n=Number(item.qty)||0, b=Number(item.bought)||0, ok=isOk(item), row=document.createElement('div');
       row.className='item'+(ok?' ok':item.done?' done':'');
       row.innerHTML=`<input type="checkbox" class="check" ${item.done||ok?'checked':''} ${ok?'disabled title="Comprado: Lista y Comprado tienen cantidad"':''} aria-label="Marcar ${esc(item.name)}">
-        <span class="name">${esc(item.name)}${n>0?`<span class="lista-badge">🧾 Lista: ${n}</span>`:''}${ok?'<em class="ok-badge">✓ Comprado</em>':''}</span>
+        <span class="name">${esc(item.name)}<button class="edit-name" title="Renombrar producto" aria-label="Renombrar ${esc(item.name)}">✏️</button>${n>0?`<span class="lista-badge">🧾 Lista: ${n}</span>`:''}${ok?'<em class="ok-badge">✓ Comprado</em>':''}</span>
         <div class="qty" role="group" aria-label="Cantidad estimada de ${esc(item.name)}"><span class="lbl">Lista</span><button class="minus" aria-label="Restar lista">−</button><output>${n}</output><button class="plus" aria-label="Sumar lista">+</button></div>
         <div class="qty bought" role="group" aria-label="Cantidad comprada de ${esc(item.name)}"><span class="lbl">Comprado</span><button class="bminus" aria-label="Restar comprado">−</button><output>${b}</output><button class="bplus" aria-label="Sumar comprado">+</button></div>
         <button class="remove" title="Eliminar ${esc(item.name)}" aria-label="Eliminar ${esc(item.name)}">🗑</button>`;
@@ -295,6 +324,7 @@ function render(){
       row.querySelector('.bminus').onclick=()=>{item.bought=Math.max(0,b-1);save(data);render()};
       row.querySelector('.bplus').onclick=()=>{item.bought=b+1;save(data);render()};
       row.querySelector('.remove').onclick=()=>{lastDeleted={cat,item,index:data[cat].indexOf(item)};data[cat]=data[cat].filter(x=>x!==item);save(data);render()};
+      row.querySelector('.edit-name').onclick=()=>{ if(renameItem(item)){ save(data); render(); } };
       box.append(row);
     });
     if(lastDeleted&&lastDeleted.cat===cat){
@@ -507,7 +537,18 @@ async function cloudSyncHistory(){
     }
   }else if(localHist.length){ cloudPush('historial-guardados',localHist) }
 }
-async function cloudSyncAll(){ await Promise.all([cloudSyncMonth(),cloudSyncHistory()]) }
+async function cloudSyncHidden(){
+  if(!sb)return;
+  const cloudHidden=await cloudPull('modulos-ocultos');
+  const localHidden=loadHiddenDefaults();
+  if(cloudHidden){
+    const merged=Array.from(new Set([...localHidden,...cloudHidden]));
+    const changed=merged.length!==localHidden.length;
+    localStorage.setItem('modulos-ocultos',JSON.stringify(merged));
+    if(changed){ cloudPush('modulos-ocultos',merged); render(); }
+  }else if(localHidden.length){ cloudPush('modulos-ocultos',localHidden) }
+}
+async function cloudSyncAll(){ await Promise.all([cloudSyncMonth(),cloudSyncHistory(),cloudSyncHidden()]) }
 $('#refreshCloud').onclick=async()=>{
   const b=$('#refreshCloud'); b.disabled=true; b.textContent='🔄 Actualizando…';
   await cloudSyncAll();

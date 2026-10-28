@@ -356,8 +356,10 @@ $('#saveList').onclick=()=>{
 };
 month.onchange=()=>{lastDeleted=null;render();showStamp();cloudSyncMonth()};
 search.oninput=render;
-$('#copyPrevious').onclick=()=>{
-  const raw=localStorage.getItem(previousKey());
+$('#copyPrevious').onclick=async()=>{
+  let raw=localStorage.getItem(previousKey());
+  // Si el mes anterior se armó en otro dispositivo, solo está en la nube.
+  if(!raw){ const cloudPrev=await cloudPull(previousKey()); if(cloudPrev){ raw=JSON.stringify(cloudPrev); localStorage.setItem(previousKey(),raw) } }
   if(!raw){alert('No hay una lista guardada para el mes anterior.');return}
   if(!confirm('¿Copiar los productos del mes anterior? Se reemplazará la lista del mes actual.'))return;
   try{save(cloneForNewMonth(JSON.parse(raw)));lastDeleted=null;render()}catch{alert('No se pudo copiar la lista anterior.')}
